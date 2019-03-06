@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="WebServers">
+    <option name="servers">
+      <webServer id="522bac85-b3e6-4926-8e3f-56a178244f55" name="reg.ru" url="http://5.63.152.229/">
+        <fileTransfer host="5.63.152.229" port="22" rootFolder="/var/www/www-root/data/www/localhost" accessType="SFTP">
+          <advancedOptions>
+            <advancedOptions forceListCommand="true" passiveMode="true" />
+          </advancedOptions>
+          <option name="port" value="22" />
+        </fileTransfer>
+      </webServer>
+    </option>
+  </component>
+</project>

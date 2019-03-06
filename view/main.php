@@ -35,6 +35,12 @@
                     </a>
                 </li>
                 <li class="nav-item">
+                    <a class="nav-link" href="index.php?goto=rashodnik" >Расходник</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="index.php?goto=printOtrab" >Отработка</a>
+                </li>
+                <li class="nav-item">
                     <a class="nav-link" href="/" data-toggle="modal" data-target="#modalChangePass">Изменить пароль</a>
                 </li>
                 <li class="nav-item" id="btnCreateUser">
@@ -54,6 +60,11 @@
         <div class="form-group">
             <label for="d_num">№ договора</label>
             <input id="d_num" class="form-control" name="d_num" placeholder="№ договора" value="<? echo $_POST["d_num"]; ?>">
+        </div>
+
+        <div class="form-group">
+            <label for="d_num">Наименование товара</label>
+            <input id="d_num" class="form-control" name="tovar_name" placeholder="Товар" value="<? echo $_POST["tovar_name"]; ?>">
         </div>
 
         <div class="form-group">
@@ -97,9 +108,21 @@
         </div>
         <div class="form-row" style="margin-bottom: 5px;">
             <label for="dateBegin">Период оформления</label>
-            <input type="text" class="datepicker-here custom-select small" style="width: 110px;" name="dateBegin">
+            <input type="text" class="datepicker-here custom-select small" style="width: 110px;" name="dateBegin" value="<? echo $_POST["dateBegin"]; ?>">
             -
-            <input type="text" class="datepicker-here custom-select small" style="width: 110px;" name="dateEnd">
+            <input type="text" class="datepicker-here custom-select small" style="width: 110px;" name="dateEnd" value="<? echo $_POST["dateEnd"]; ?>">
+        </div>
+        <div class="form-row" style="margin-bottom: 5px;">
+            <label for="dateCloseBegin">Дата отработки (завершения)</label>
+            <input type="text" class="datepicker-here custom-select small" style="width: 110px;" name="dateCloseBegin" value="<? echo $_POST["dateCloseBegin"]; ?>">
+            -
+            <input type="text" class="datepicker-here custom-select small" style="width: 110px;" name="dateCloseEnd" value="<? echo $_POST["dateCloseEnd"]; ?>">
+        </div>
+        <div class="form-check">
+            <input class="form-check-input" type="checkbox" id="neotr" name="neotr" value="1" <? if($_POST["neotr"]=="1") echo "checked"; ?>>
+            <label class="form-check-label" for="neotr">
+                Только неотработка
+            </label>
         </div>
         <div class="form-inline" style="float: right;">
             <button class="btn btn-secondary" type="submit">Поиск!</button>
@@ -109,46 +132,55 @@
 <!-- Page Content -->
 <div class="form-group" style="display: inline-block; width: calc(100% - 251px); vertical-align: top; margin-left: 20px;">
     <form name="gridForm" id="gridForm" action="<? echo $_SERVER['REQUEST_URI']; ?>" method="post"  onsubmit="return validate_check ( );">
+        <input id="page" name="page" value="<? echo $_POST["page"] ?>" hidden>
         <div class="btn-group">
                 <button type="button" id="btnPrimechU" class="btn btn-primary btn-sm" data-toggle="modal" data-target="#modalPrimU">Изм. примеч. Р</button>
                 <button type="button" id="btnPrimechM" class="btn btn-secondary btn-sm" data-toggle="modal" data-target="#modalPrimM">Изм. примеч. М</button>
                 <button type="button" id="btnStatus" class="btn btn-success btn-sm" data-toggle="modal" data-target="#modalStat">Изм. статус</button>
-                <button type="button" id="btnDelete" class="btn btn-danger btn-sm" data-toggle="modal" data-target="#modalDel">Удалить</button>
+                <button type="button" id="btnNeotr" class="btn btn-danger btn-sm" data-toggle="modal" data-target="#modalNeotr" onclick="getDogToNeotr()">В неотработку</button>
         </div>
-    <table class="table table-hover" style="width: calc(100% - 251px);">
+    <table class="table-sm table-hover" style="width: calc(100% - 251px);">
     <thead>
     <tr>
         <th>  </th>
         <th><input type="checkbox" class="form-check-input" id="checkAll">№</th>
         <th>Статус</th>
         <th>Дата</th>
-        <th>Наименование товара</th>
-        <th>Производитель</th>
+        <th>Оформил</th>
         <th>Прим. рук-ва</th>
         <th>Прим. магаз.</th>
-        <th>Цена(шт.)</th>
+        <th>Сп.Оплаты</th>
+        <th>Оплачено</th>
+        <th>Сумма</th>
+        <th>Взнос</th>
     </tr>
     </thead>
-    <tbody>
     <?php foreach ($table["data"] as $curow) { ?>
+        <tbody class="<? if ($curow["d_neotr"] == 1) echo 'table-danger'; else if ($curow["d_date_close"] !== "") echo 'table-success'; else echo 'table-default'; ?>">
     <tr>
-        <td>  </td>
-        <td><input type="checkbox" class="form-check-input" name="tovar_ids[]" id="<? echo $curow["tovar_id"]; ?>" value="<? echo $curow["tovar_id"]; ?>"><a href="index.php?id=<? echo $curow["d_id"]; ?>"> <? echo $curow["d_num"]; ?> </a></td>
+        <td> * </td>
+        <td><input type="checkbox" class="form-check-input" name="d_ids[]" id="<? echo $curow["d_id"]; ?>" value="<? echo $curow["d_id"]; ?>" title="<? echo $curow["d_num"]; ?>"><a href="index.php?id=<? echo $curow["d_id"]; ?>"> <? echo $curow["d_num"]; ?> </a></td>
         <td><? echo $curow["status_name"]; ?></td>
         <td><? echo $curow["d_date_add"]; ?></td>
-        <td><? echo $curow["tovar_name"]; ?></td>
-        <td><? echo $curow["tovar_proizv"]; ?></td>
-        <td><? echo $curow["tovar_primech_ruk"]; ?></td>
-        <td><? echo $curow["tovar_primech_magaz"]; ?></td>
-        <td><? echo $curow["tovar_cost"].'('.$curow["tovar_kolvo"].')'; ?></td>
-        <? $summa = $summa+($curow["tovar_cost"]*$curow["tovar_kolvo"]) ?>
+        <td><? echo $curow["user_fio"]; ?></td>
+        <td><? echo $curow["d_primech_r"]; ?></td>
+        <td><? echo $curow["d_primech_m"]; ?></td>
+        <td><? echo $curow["spopl_name"]; ?></td>
+        <td><? echo $curow["plata_sum"]; ?></td>
+        <td><? echo $curow["s_summa"]; ?></td>
+        <td><button type="button" class="btn btn-primary btn-sm" name="insertPlata" data-toggle="modal" data-target="#modalPlata" id="btnPlata" onclick="selectCurr(<? echo $curow["d_id"]; ?>);" <? if ($role=='*') echo 'disabled'; ?>>+</button></td>
     </tr>
-    <?}?>
+    <?
+    $tovars = $Data->getTovar($mysqli, $curow["d_id"]);
+    foreach ($tovars["tovar"] as $tovar) { ?>
+    <tr>
+        <td></td><td></td>
+        <td colspan="9"><? echo $tovar["tovar_name"].'('.$tovar["proizv_name"].') = '.$tovar["tovar_cost"].'р.('.$tovar["tovar_kolvo"].')'; ?></td>
+    </tr>
+    <? } ?>
     </tbody>
+        <? }?>
 </table>
-        <div class="text-xl-right">
-            Сумма: <? echo $summa ?>
-        </div>
 
     <!-- Pagination -->
     <ul class="pagination justify-content-center">
@@ -239,6 +271,65 @@
         </div>
     </div>
 </div>
+
+<div class="modal fade" id="modalPlata" tabindex="-1" role="dialog" aria-labelledby="modalPlata" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalLabel">Введите оплату</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label for="status_id">Способ оплаты</label>
+                    <select class="form-control" id="spopl_id_upd" name="spopl_id_upd">
+                        <?php foreach ($spopl as $spopl_row) { ?>
+                            <option value="<? echo $spopl_row["spopl_id"] ?>"><? echo $spopl_row["spopl_name"] ?></option>
+                        <? } ?>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="inputEmail3" class="control-label">Наименование платы</label>
+                    <div class="col-sm-10">
+                        <input type="text" class="form-control" placeholder="Остаток\Взнос рассрочка\..." name="plata_name">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="inputEmail3" class="control-label">Сумма</label>
+                    <div class="col-sm-10">
+                        <input type="text" class="form-control" placeholder="руб." name="plata_sum">
+                    </div>
+                </div>
+                <button class="btn btn-primary" type="submit" name="act" value="isInsertPlata">Добавить плату</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="modalNeotr" tabindex="-1" role="dialog" aria-labelledby="modalNeotr" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalLabel">Добавить выбранные договора в неотработку?</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label for="inputEmail3" class="control-label">Наименование платы</label>
+                    <div class="col-sm-10">
+                        <input type="text" class="form-control" placeholder="Не выбраны договора для добавления в неотработку!" name="neotrDog" id="neotrDog" disabled>
+                    </div>
+                </div>
+                <button class="btn btn-primary" type="submit" name="act" value="isInsertNeotrabotka">Добавить в неотработку</button>
+            </div>
+        </div>
+    </div>
+</div>
+
 </form>
 
 <!-- modal change pass and create user -->
@@ -340,6 +431,10 @@
         $(".form-check-input").prop('checked', $(this).prop('checked'));
     });
 
+    $('#modalPlata').on('hidden.bs.modal', function () {
+        $(".form-check-input").prop('checked', false);
+    });
+
 </script>
 <script type="text/javascript">
     function validate_search ( )
@@ -364,6 +459,28 @@
             valid = false;
         }
         return valid;
+    }
+
+    function selectCurr(d_id){
+        $(".form-check-input").prop('checked', false);
+        $(".form-check-input#"+d_id+"").prop('checked', true);
+    }
+
+    function getDogToNeotr() {
+        var checkboxes = document.getElementsByClassName('form-check-input');
+        var selectedCheckboxes ="В неотработку ";
+        var count=0;
+        for (var index = 0; index < checkboxes.length; index++) {
+            if (checkboxes[index].checked) {
+                selectedCheckboxes += checkboxes[index].title+", "; // положим в массив выбранный
+                count++;
+            }
+        }
+        if (count > 0) {
+            $("#neotrDog").prop('value', selectedCheckboxes.substr(0, selectedCheckboxes.length - 2) + "?");
+        } else {
+            $("#neotrDog").prop('value', "Не выбраны договора!");
+        }
     }
 </script>
 
